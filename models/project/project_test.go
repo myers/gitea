@@ -83,6 +83,34 @@ func TestProject(t *testing.T) {
 	assert.True(t, projectFromDB.IsClosed)
 }
 
+func TestChangeProjectStatusClosedDate(t *testing.T) {
+	assert.NoError(t, unittest.PrepareTestDatabase())
+
+	// Create a project
+	p := &Project{
+		Title:     "Close Date Test",
+		RepoID:    1,
+		Type:      TypeRepository,
+		CreatorID: 1,
+	}
+	assert.NoError(t, NewProject(t.Context(), p))
+	assert.Equal(t, timeutil.TimeStamp(0), p.ClosedDateUnix)
+
+	// Close it
+	assert.NoError(t, ChangeProjectStatus(t.Context(), p, true))
+	got, err := GetProjectByID(t.Context(), p.ID)
+	assert.NoError(t, err)
+	assert.True(t, got.IsClosed)
+	assert.NotEqual(t, timeutil.TimeStamp(0), got.ClosedDateUnix)
+
+	// Reopen it
+	assert.NoError(t, ChangeProjectStatus(t.Context(), got, false))
+	got, err = GetProjectByID(t.Context(), p.ID)
+	assert.NoError(t, err)
+	assert.False(t, got.IsClosed)
+	assert.Equal(t, timeutil.TimeStamp(0), got.ClosedDateUnix)
+}
+
 func TestProjectsSort(t *testing.T) {
 	assert.NoError(t, unittest.PrepareTestDatabase())
 

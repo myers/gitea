@@ -87,3 +87,87 @@ func DeleteAllProjectIssueByIssueIDsAndProjectIDs(ctx context.Context, issueIDs,
 	_, err := db.GetEngine(ctx).In("project_id", projectIDs).In("issue_id", issueIDs).Delete(&ProjectIssue{})
 	return err
 }
+
+// AddIssueToProject adds an issue to a project column. If sorting < 0, appends to end.
+func AddIssueToProject(ctx context.Context, projectID, columnID, issueID, sorting int64) error {
+	return db.WithTx(ctx, func(ctx context.Context) error {
+		has, err := db.GetEngine(ctx).Where("project_id = ? AND issue_id = ?", projectID, issueID).Exist(&ProjectIssue{})
+		if err != nil {
+			return err
+		}
+		if has {
+			return ErrCardAlreadyInProject{ProjectID: projectID, IssueID: issueID}
+		}
+
+		if sorting < 0 {
+			var maxRes struct {
+				MaxSorting int64
+				Cnt        int64
+			}
+			if _, err := db.GetEngine(ctx).Table("project_issue").
+				Select("COALESCE(MAX(sorting), -1) as max_sorting, COUNT(*) as cnt").
+				Where("project_board_id = ?", columnID).
+				Get(&maxRes); err != nil {
+				return err
+			}
+			sorting = util.Iif(maxRes.Cnt > 0, maxRes.MaxSorting+1, 0)
+		}
+
+		return db.Insert(ctx, &ProjectIssue{
+			IssueID:         issueID,
+			ProjectID:       projectID,
+			ProjectColumnID: columnID,
+			Sorting:         sorting,
+		})
+	})
+}
+
+// RemoveIssueFromProject removes an issue from a project. No error if not found.
+func RemoveIssueFromProject(ctx context.Context, projectID, issueID int64) error {
+	_, err := db.GetEngine(ctx).Where("project_id = ? AND issue_id = ?", projectID, issueID).Delete(&ProjectIssue{})
+	return err
+}
+
+// GetProjectCard returns the project card for a given project and issue
+func GetProjectCard(ctx context.Context, projectID, issueID int64) (*ProjectIssue, error) {
+	pi := new(ProjectIssue)
+	has, err := db.GetEngine(ctx).Where("project_id = ? AND issue_id = ?", projectID, issueID).Get(pi)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, ErrProjectCardNotExist{ProjectID: projectID, IssueID: issueID}
+	}
+	return pi, nil
+}
+
+// GetProjectIssueByID returns a project card by its ID
+func GetProjectIssueByID(ctx context.Context, cardID int64) (*ProjectIssue, error) {
+	pi := new(ProjectIssue)
+	has, err := db.GetEngine(ctx).ID(cardID).Get(pi)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, ErrProjectCardNotExist{CardID: cardID}
+	}
+	return pi, nil
+}
+
+// CountCardsInColumn returns the number of cards in a column
+func CountCardsInColumn(ctx context.Context, columnID int64) (int64, error) {
+	return db.GetEngine(ctx).Where("project_board_id = ?", columnID).Count(&ProjectIssue{})
+}
+
+// GetProjectIssueColumnIDs returns a map of issue IDs to column IDs for a project
+func GetProjectIssueColumnIDs(ctx context.Context, projectID int64) (map[int64]int64, error) {
+	issues := make([]ProjectIssue, 0)
+	if err := db.GetEngine(ctx).Where("project_id = ?", projectID).Find(&issues); err != nil {
+		return nil, err
+	}
+	result := make(map[int64]int64, len(issues))
+	for _, pi := range issues {
+		result[pi.IssueID] = pi.ProjectColumnID
+	}
+	return result, nil
+}
