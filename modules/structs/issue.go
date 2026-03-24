@@ -82,6 +82,11 @@ type Issue struct {
 	Repo        *RepositoryMeta  `json:"repository"`
 
 	PinOrder int `json:"pin_order"`
+
+	// BlockedBy lists database IDs of issues that block this issue (only with includes=dependencies)
+	BlockedBy []int64 `json:"blocked_by,omitempty"`
+	// Blocking lists database IDs of issues that this issue blocks (only with includes=dependencies)
+	Blocking []int64 `json:"blocking,omitempty"`
 }
 
 // CreateIssueOption options to create one issue

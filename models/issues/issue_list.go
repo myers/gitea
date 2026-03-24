@@ -512,6 +512,53 @@ func (issues IssueList) LoadPinOrder(ctx context.Context) error {
 	return nil
 }
 
+// LoadDependencyIDs batch-loads blocked_by and blocking dependency IDs for all issues in the list
+func (issues IssueList) LoadDependencyIDs(ctx context.Context) error {
+	if len(issues) == 0 {
+		return nil
+	}
+
+	issueIDs := issues.getIssueIDs()
+
+	// Load blocked_by: issue_dependency.issue_id -> dependency_id
+	type depRow struct {
+		IssueID      int64
+		DependencyID int64
+	}
+	var blockedByRows []depRow
+	if err := db.GetEngine(ctx).Table("issue_dependency").
+		In("issue_id", issueIDs).
+		Cols("issue_id", "dependency_id").
+		Find(&blockedByRows); err != nil {
+		return fmt.Errorf("LoadDependencyIDs: load blocked_by: %w", err)
+	}
+
+	// Load blocking: issue_dependency.dependency_id -> issue_id
+	var blockingRows []depRow
+	if err := db.GetEngine(ctx).Table("issue_dependency").
+		In("dependency_id", issueIDs).
+		Cols("issue_id", "dependency_id").
+		Find(&blockingRows); err != nil {
+		return fmt.Errorf("LoadDependencyIDs: load blocking: %w", err)
+	}
+
+	blockedByMap := make(map[int64][]int64)
+	for _, r := range blockedByRows {
+		blockedByMap[r.IssueID] = append(blockedByMap[r.IssueID], r.DependencyID)
+	}
+	blockingMap := make(map[int64][]int64)
+	for _, r := range blockingRows {
+		blockingMap[r.DependencyID] = append(blockingMap[r.DependencyID], r.IssueID)
+	}
+
+	for _, issue := range issues {
+		issue.BlockedByIDs = blockedByMap[issue.ID]
+		issue.BlockingIDs = blockingMap[issue.ID]
+		issue.isDependencyIDsLoaded = true
+	}
+	return nil
+}
+
 // loadAttributes loads all attributes, expect for attachments and comments
 func (issues IssueList) LoadAttributes(ctx context.Context) error {
 	if _, err := issues.LoadRepositories(ctx); err != nil {

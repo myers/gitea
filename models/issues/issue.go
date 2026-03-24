@@ -120,8 +120,18 @@ type Issue struct {
 	// For view issue page.
 	ShowRole RoleDescriptor `xorm:"-"`
 
+	// Dependency IDs (loaded on demand, not persisted)
+	BlockedByIDs          []int64 `xorm:"-"`
+	BlockingIDs           []int64 `xorm:"-"`
+	isDependencyIDsLoaded bool    `xorm:"-"`
+
 	// Time estimate
 	TimeEstimate int64 `xorm:"NOT NULL DEFAULT 0"`
+}
+
+// IsDependencyIDsLoaded returns whether dependency IDs have been loaded
+func (issue *Issue) IsDependencyIDsLoaded() bool {
+	return issue.isDependencyIDsLoaded
 }
 
 var (

@@ -21,19 +21,31 @@ import (
 	"code.gitea.io/gitea/modules/util"
 )
 
-func ToIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue) *api.Issue {
-	return toIssue(ctx, doer, issue, WebAssetDownloadURL)
+// ToIssueOptions controls optional data included in issue API responses
+type ToIssueOptions struct {
+	IncludeDependencies bool
+}
+
+func ToIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue, opts ...ToIssueOptions) *api.Issue {
+	return toIssue(ctx, doer, issue, WebAssetDownloadURL, mergeOpts(opts))
 }
 
 // ToAPIIssue converts an Issue to API format
 // it assumes some fields assigned with values:
 // Required - Poster, Labels,
 // Optional - Milestone, Assignee, PullRequest
-func ToAPIIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue) *api.Issue {
-	return toIssue(ctx, doer, issue, APIAssetDownloadURL)
+func ToAPIIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue, opts ...ToIssueOptions) *api.Issue {
+	return toIssue(ctx, doer, issue, APIAssetDownloadURL, mergeOpts(opts))
 }
 
-func toIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue, getDownloadURL func(repo *repo_model.Repository, attach *repo_model.Attachment) string) *api.Issue {
+func mergeOpts(opts []ToIssueOptions) ToIssueOptions {
+	if len(opts) > 0 {
+		return opts[0]
+	}
+	return ToIssueOptions{}
+}
+
+func toIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Issue, getDownloadURL func(repo *repo_model.Repository, attach *repo_model.Attachment) string, opts ToIssueOptions) *api.Issue {
 	if err := issue.LoadPoster(ctx); err != nil {
 		return &api.Issue{}
 	}
@@ -123,25 +135,64 @@ func toIssue(ctx context.Context, doer *user_model.User, issue *issues_model.Iss
 		apiIssue.Deadline = issue.DeadlineUnix.AsTimePtr()
 	}
 
+	if opts.IncludeDependencies {
+		if !issue.IsDependencyIDsLoaded() {
+			blockedBy, err := issues_model.GetBlockedByDependencyIDs(ctx, issue.ID)
+			if err != nil {
+				log.Error("GetBlockedByDependencyIDs: %v", err)
+				return apiIssue
+			}
+			blocking, err := issues_model.GetBlockingDependencyIDs(ctx, issue.ID)
+			if err != nil {
+				log.Error("GetBlockingDependencyIDs: %v", err)
+				return apiIssue
+			}
+			issue.BlockedByIDs = blockedBy
+			issue.BlockingIDs = blocking
+		}
+		if issue.BlockedByIDs != nil {
+			apiIssue.BlockedBy = issue.BlockedByIDs
+		} else {
+			apiIssue.BlockedBy = []int64{}
+		}
+		if issue.BlockingIDs != nil {
+			apiIssue.Blocking = issue.BlockingIDs
+		} else {
+			apiIssue.Blocking = []int64{}
+		}
+	}
+
 	return apiIssue
 }
 
 // ToIssueList converts an IssueList to API format
-func ToIssueList(ctx context.Context, doer *user_model.User, il issues_model.IssueList) []*api.Issue {
+func ToIssueList(ctx context.Context, doer *user_model.User, il issues_model.IssueList, opts ...ToIssueOptions) []*api.Issue {
+	o := mergeOpts(opts)
 	result := make([]*api.Issue, len(il))
 	_ = il.LoadPinOrder(ctx)
+	if o.IncludeDependencies {
+		if err := il.LoadDependencyIDs(ctx); err != nil {
+			log.Error("LoadDependencyIDs: %v", err)
+		}
+	}
 	for i := range il {
-		result[i] = ToIssue(ctx, doer, il[i])
+		result[i] = ToIssue(ctx, doer, il[i], o)
 	}
 	return result
 }
 
 // ToAPIIssueList converts an IssueList to API format
-func ToAPIIssueList(ctx context.Context, doer *user_model.User, il issues_model.IssueList) []*api.Issue {
+func ToAPIIssueList(ctx context.Context, doer *user_model.User, il issues_model.IssueList, opts ...ToIssueOptions) []*api.Issue {
+	o := mergeOpts(opts)
 	result := make([]*api.Issue, len(il))
 	_ = il.LoadPinOrder(ctx)
+	if o.IncludeDependencies {
+		if err := il.LoadDependencyIDs(ctx); err != nil {
+			log.Error("LoadDependencyIDs: %v", err)
+		}
+	}
 	for i := range il {
-		result[i] = ToAPIIssue(ctx, doer, il[i])
+		result[i] = ToAPIIssue(ctx, doer, il[i], o)
 	}
 	return result
 }
