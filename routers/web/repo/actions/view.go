@@ -732,34 +732,41 @@ func ArtifactsDownloadView(ctx *context_module.Context) {
 	writer := zip.NewWriter(ctx.Resp)
 	defer writer.Close()
 	for _, art := range artifacts {
-		f, err := storage.ActionsArtifacts.Open(art.StoragePath)
-		if err != nil {
-			ctx.ServerError("ActionsArtifacts.Open", err)
-			return
-		}
-
-		var r io.ReadCloser
-		if art.ContentEncoding == "gzip" {
-			r, err = gzip.NewReader(f)
-			if err != nil {
-				ctx.ServerError("gzip.NewReader", err)
-				return
-			}
-		} else {
-			r = f
-		}
-		defer r.Close()
-
-		w, err := writer.Create(art.ArtifactPath)
-		if err != nil {
-			ctx.ServerError("writer.Create", err)
-			return
-		}
-		if _, err := io.Copy(w, r); err != nil {
-			ctx.ServerError("io.Copy", err)
+		if err := writeArtifactToZip(ctx, writer, art); err != nil {
 			return
 		}
 	}
+}
+
+func writeArtifactToZip(ctx *context_module.Context, writer *zip.Writer, art *actions_model.ActionArtifact) error {
+	f, err := storage.ActionsArtifacts.Open(art.StoragePath)
+	if err != nil {
+		ctx.ServerError("ActionsArtifacts.Open", err)
+		return err
+	}
+	defer f.Close()
+
+	var r io.Reader = f
+	if art.ContentEncoding == "gzip" {
+		gr, err := gzip.NewReader(f)
+		if err != nil {
+			ctx.ServerError("gzip.NewReader", err)
+			return err
+		}
+		defer gr.Close()
+		r = gr
+	}
+
+	w, err := writer.Create(art.ArtifactPath)
+	if err != nil {
+		ctx.ServerError("writer.Create", err)
+		return err
+	}
+	if _, err := io.Copy(w, r); err != nil {
+		ctx.ServerError("io.Copy", err)
+		return err
+	}
+	return nil
 }
 
 func ApproveAllChecks(ctx *context_module.Context) {
