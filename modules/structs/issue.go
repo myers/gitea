@@ -81,7 +81,8 @@ type Issue struct {
 	PullRequest *PullRequestMeta `json:"pull_request"`
 	Repo        *RepositoryMeta  `json:"repository"`
 
-	PinOrder int `json:"pin_order"`
+	PinOrder       int `json:"pin_order"`
+	ContentVersion int `json:"content_version"`
 
 	// BlockedBy lists database IDs of issues that block this issue (only with includes=dependencies)
 	BlockedBy []int64 `json:"blocked_by,omitempty"`
@@ -120,6 +121,7 @@ type EditIssueOption struct {
 	// swagger:strfmt date-time
 	Deadline       *time.Time `json:"due_date"`
 	RemoveDeadline *bool      `json:"unset_due_date"`
+	ContentVersion *int       `json:"content_version"`
 }
 
 // EditDeadlineOption options for creating a deadline
