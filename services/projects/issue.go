@@ -50,19 +50,34 @@ func MoveIssuesOnProjectColumn(ctx context.Context, doer *user_model.User, colum
 			issuesMap[issue.ID] = issue
 		}
 
+		oldColumnIDs := make(map[int64]int64, len(sortedIssueIDs))
+		for _, issueID := range sortedIssueIDs {
+			curIssue := issuesMap[issueID]
+			if curIssue == nil {
+				continue
+			}
+			colID, err := curIssue.ProjectColumnID(ctx)
+			if err != nil {
+				return err
+			}
+			oldColumnIDs[issueID] = colID
+		}
+
+		for sorting, issueID := range sortedIssueIDs {
+			_, err = db.Exec(ctx, "UPDATE `project_issue` SET sorting=? WHERE issue_id=? AND project_id=?",
+				-(sorting + 1), issueID, column.ProjectID)
+			if err != nil {
+				return err
+			}
+		}
+
 		for sorting, issueID := range sortedIssueIDs {
 			curIssue := issuesMap[issueID]
 			if curIssue == nil {
 				continue
 			}
 
-			projectColumnID, err := curIssue.ProjectColumnID(ctx)
-			if err != nil {
-				return err
-			}
-
-			if projectColumnID != column.ID {
-				// add timeline to issue
+			if oldColumnIDs[issueID] != column.ID {
 				if _, err := issues_model.CreateComment(ctx, &issues_model.CreateCommentOptions{
 					Type:               issues_model.CommentTypeProjectColumn,
 					Doer:               doer,
@@ -77,7 +92,8 @@ func MoveIssuesOnProjectColumn(ctx context.Context, doer *user_model.User, colum
 				}
 			}
 
-			_, err = db.Exec(ctx, "UPDATE `project_issue` SET project_board_id=?, sorting=? WHERE issue_id=?", column.ID, sorting, issueID)
+			_, err = db.Exec(ctx, "UPDATE `project_issue` SET project_board_id=?, sorting=? WHERE issue_id=? AND project_id=?",
+				column.ID, sorting, issueID, column.ProjectID)
 			if err != nil {
 				return err
 			}

@@ -393,6 +393,47 @@ func MoveColumnsOnProject(ctx context.Context, project *Project, sortedColumnIDs
 	})
 }
 
+// MoveColumnToPosition moves a column to the target sorting position using
+// shift-insert: removes the column from the ordered list, inserts at position,
+// and reassigns sequential sorting values to all columns.
+func MoveColumnToPosition(ctx context.Context, projectID, columnID int64, targetPosition int8) error {
+	return db.WithTx(ctx, func(ctx context.Context) error {
+		columns := make([]*Column, 0, maxProjectColumns)
+		if err := db.GetEngine(ctx).Where("project_id=?", projectID).
+			OrderBy("sorting, id").Find(&columns); err != nil {
+			return err
+		}
+
+		var moved *Column
+		filtered := make([]*Column, 0, len(columns))
+		for _, c := range columns {
+			if c.ID == columnID {
+				moved = c
+			} else {
+				filtered = append(filtered, c)
+			}
+		}
+		if moved == nil {
+			return ErrProjectColumnNotExist{ColumnID: columnID}
+		}
+
+		pos := min(max(int(targetPosition), 0), len(filtered))
+
+		result := make([]*Column, 0, len(columns))
+		result = append(result, filtered[:pos]...)
+		result = append(result, moved)
+		result = append(result, filtered[pos:]...)
+
+		for i, c := range result {
+			if _, err := db.GetEngine(ctx).ID(c.ID).Cols("sorting").
+				Update(&Column{Sorting: int8(i)}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 // BatchCountCardsInColumns returns count of cards per column for given column IDs
 func BatchCountCardsInColumns(ctx context.Context, columnIDs []int64) (map[int64]int64, error) {
 	if len(columnIDs) == 0 {

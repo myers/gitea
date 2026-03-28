@@ -159,6 +159,25 @@ func CountCardsInColumn(ctx context.Context, columnID int64) (int64, error) {
 	return db.GetEngine(ctx).Where("project_board_id = ?", columnID).Count(&ProjectIssue{})
 }
 
+// GetColumnCards returns paginated cards in a column with total count
+func GetColumnCards(ctx context.Context, columnID int64, opts db.ListOptions) ([]*ProjectIssue, int64, error) {
+	count, err := db.GetEngine(ctx).Where("project_board_id = ?", columnID).Count(new(ProjectIssue))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	sess := db.GetEngine(ctx).Where("project_board_id = ?", columnID).OrderBy("sorting, id")
+	if opts.PageSize > 0 {
+		sess = db.SetSessionPagination(sess, &opts)
+	}
+
+	cards := make([]*ProjectIssue, 0, opts.PageSize)
+	if err := sess.Find(&cards); err != nil {
+		return nil, 0, err
+	}
+	return cards, count, nil
+}
+
 // GetProjectIssueColumnIDs returns a map of issue IDs to column IDs for a project
 func GetProjectIssueColumnIDs(ctx context.Context, projectID int64) (map[int64]int64, error) {
 	issues := make([]ProjectIssue, 0)
