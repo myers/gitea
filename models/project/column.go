@@ -105,8 +105,9 @@ func createDefaultColumnsForProject(ctx context.Context, project *Project) error
 			Title:       "Backlog",
 			ProjectID:   project.ID,
 			Default:     true,
+			Sorting:     0,
 		}
-		if err := db.Insert(ctx, column); err != nil {
+		if err := db.Insert(ctx, &column); err != nil {
 			return err
 		}
 
@@ -115,12 +116,13 @@ func createDefaultColumnsForProject(ctx context.Context, project *Project) error
 		}
 
 		columns := make([]Column, 0, len(items))
-		for _, v := range items {
+		for i, v := range items {
 			columns = append(columns, Column{
 				CreatedUnix: timeutil.TimeStampNow(),
 				CreatorID:   project.CreatorID,
 				Title:       v,
 				ProjectID:   project.ID,
+				Sorting:     int8(i + 1),
 			})
 		}
 
@@ -138,20 +140,22 @@ func NewColumn(ctx context.Context, column *Column) error {
 		return fmt.Errorf("bad color code: %s", column.Color)
 	}
 
-	res := struct {
-		MaxSorting  int64
-		ColumnCount int64
-	}{}
-	if _, err := db.GetEngine(ctx).Select("max(sorting) as max_sorting, count(*) as column_count").Table("project_board").
-		Where("project_id=?", column.ProjectID).Get(&res); err != nil {
+	return db.WithTx(ctx, func(ctx context.Context) error {
+		res := struct {
+			MaxSorting  int64
+			ColumnCount int64
+		}{}
+		if _, err := db.GetEngine(ctx).Select("max(sorting) as max_sorting, count(*) as column_count").Table("project_board").
+			Where("project_id=?", column.ProjectID).Get(&res); err != nil {
+			return err
+		}
+		if res.ColumnCount >= maxProjectColumns {
+			return errors.New("NewBoard: maximum number of columns reached")
+		}
+		column.Sorting = int8(util.Iif(res.ColumnCount > 0, res.MaxSorting+1, 0))
+		_, err := db.GetEngine(ctx).Insert(column)
 		return err
-	}
-	if res.ColumnCount >= maxProjectColumns {
-		return errors.New("NewBoard: maximum number of columns reached")
-	}
-	column.Sorting = int8(util.Iif(res.ColumnCount > 0, res.MaxSorting+1, 0))
-	_, err := db.GetEngine(ctx).Insert(column)
-	return err
+	})
 }
 
 // DeleteColumnByID removes all issues references to the project column.
@@ -227,11 +231,7 @@ func GetColumnByIDAndProjectID(ctx context.Context, columnID, projectID int64) (
 
 // UpdateColumn updates a project column
 func UpdateColumn(ctx context.Context, column *Column) error {
-	var fieldToUpdate []string
-
-	if column.Sorting != 0 {
-		fieldToUpdate = append(fieldToUpdate, "sorting")
-	}
+	fieldToUpdate := []string{"sorting"}
 
 	if column.Title != "" {
 		fieldToUpdate = append(fieldToUpdate, "title")
@@ -386,4 +386,52 @@ func MoveColumnsOnProject(ctx context.Context, project *Project, sortedColumnIDs
 		}
 		return nil
 	})
+}
+
+// BatchCountCardsInColumns returns count of cards per column for given column IDs
+func BatchCountCardsInColumns(ctx context.Context, columnIDs []int64) (map[int64]int64, error) {
+	if len(columnIDs) == 0 {
+		return map[int64]int64{}, nil
+	}
+	type result struct {
+		ProjectBoardID int64
+		Cnt            int64
+	}
+	var results []result
+	if err := db.GetEngine(ctx).Table("project_issue").
+		Select("project_board_id, count(*) as cnt").
+		In("project_board_id", columnIDs).
+		GroupBy("project_board_id").
+		Find(&results); err != nil {
+		return nil, err
+	}
+	m := make(map[int64]int64, len(results))
+	for _, r := range results {
+		m[r.ProjectBoardID] = r.Cnt
+	}
+	return m, nil
+}
+
+// BatchCountProjectColumns returns count of columns per project for given project IDs
+func BatchCountProjectColumns(ctx context.Context, projectIDs []int64) (map[int64]int64, error) {
+	if len(projectIDs) == 0 {
+		return map[int64]int64{}, nil
+	}
+	type result struct {
+		ProjectID int64
+		Cnt       int64
+	}
+	var results []result
+	if err := db.GetEngine(ctx).Table("project_board").
+		Select("project_id, count(*) as cnt").
+		In("project_id", projectIDs).
+		GroupBy("project_id").
+		Find(&results); err != nil {
+		return nil, err
+	}
+	m := make(map[int64]int64, len(results))
+	for _, r := range results {
+		m[r.ProjectID] = r.Cnt
+	}
+	return m, nil
 }

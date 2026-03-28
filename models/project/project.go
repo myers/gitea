@@ -81,6 +81,45 @@ func (err ErrProjectColumnNotExist) Unwrap() error {
 	return util.ErrNotExist
 }
 
+// ErrProjectCardNotExist represents a "ProjectCardNotExist" kind of error.
+type ErrProjectCardNotExist struct {
+	CardID    int64
+	ProjectID int64
+	IssueID   int64
+}
+
+func IsErrProjectCardNotExist(err error) bool {
+	_, ok := err.(ErrProjectCardNotExist)
+	return ok
+}
+
+func (err ErrProjectCardNotExist) Error() string {
+	return fmt.Sprintf("project card does not exist [card_id: %d, project_id: %d, issue_id: %d]", err.CardID, err.ProjectID, err.IssueID)
+}
+
+func (err ErrProjectCardNotExist) Unwrap() error {
+	return util.ErrNotExist
+}
+
+// ErrCardAlreadyInProject represents a "CardAlreadyInProject" kind of error.
+type ErrCardAlreadyInProject struct {
+	ProjectID int64
+	IssueID   int64
+}
+
+func IsErrCardAlreadyInProject(err error) bool {
+	_, ok := err.(ErrCardAlreadyInProject)
+	return ok
+}
+
+func (err ErrCardAlreadyInProject) Error() string {
+	return fmt.Sprintf("issue already in project [project_id: %d, issue_id: %d]", err.ProjectID, err.IssueID)
+}
+
+func (err ErrCardAlreadyInProject) Unwrap() error {
+	return util.ErrAlreadyExist
+}
+
 // Project represents a project
 type Project struct {
 	ID           int64                  `xorm:"pk autoincr"`
@@ -394,7 +433,11 @@ func ChangeProjectStatus(ctx context.Context, p *Project, isClosed bool) error {
 
 func changeProjectStatus(ctx context.Context, p *Project, isClosed bool) error {
 	p.IsClosed = isClosed
-	p.ClosedDateUnix = timeutil.TimeStampNow()
+	if isClosed {
+		p.ClosedDateUnix = timeutil.TimeStampNow()
+	} else {
+		p.ClosedDateUnix = 0
+	}
 	count, err := db.GetEngine(ctx).ID(p.ID).Where("repo_id = ? AND is_closed = ?", p.RepoID, !isClosed).Cols("is_closed", "closed_date_unix").Update(p)
 	if err != nil {
 		return err
@@ -469,4 +512,39 @@ func DeleteProjectByRepoID(ctx context.Context, repoID int64) error {
 	}
 
 	return updateRepositoryProjectCount(ctx, repoID)
+}
+
+// IsValidSortType checks if a sort type string is valid
+func IsValidSortType(sortType string) bool {
+	switch sortType {
+	case "oldest", "recentupdate", "leastupdate", "alphabetically", "reversealphabetically", "newest":
+		return true
+	default:
+		return false
+	}
+}
+
+// GetProjectsByIDs returns projects by their IDs
+func GetProjectsByIDs(ctx context.Context, ids []int64) (map[int64]*Project, error) {
+	projects := make([]*Project, 0, len(ids))
+	if err := db.GetEngine(ctx).In("id", ids).Find(&projects); err != nil {
+		return nil, err
+	}
+	result := make(map[int64]*Project, len(projects))
+	for _, p := range projects {
+		result[p.ID] = p
+	}
+	return result, nil
+}
+
+// GetProjectForOrgByID returns a project owned by the given org
+func GetProjectForOrgByID(ctx context.Context, ownerID, projectID int64) (*Project, error) {
+	p := new(Project)
+	has, err := db.GetEngine(ctx).Where("id = ? AND owner_id = ?", projectID, ownerID).Get(p)
+	if err != nil {
+		return nil, err
+	} else if !has {
+		return nil, ErrProjectNotExist{ID: projectID}
+	}
+	return p, nil
 }
