@@ -1,6 +1,7 @@
 import {POST} from '../modules/fetch.ts';
 import {queryElems, toggleElem} from '../utils/dom.ts';
 import {IssueSidebarComboList} from './repo-issue-sidebar-combolist.ts';
+import {initProjectColumnPicker} from './repo-issue-sidebar-project.ts';
 
 function initBranchSelector() {
   // TODO: RemoveIssueRef: see "repo/issue/branch_selector_field.tmpl"
@@ -49,4 +50,7 @@ export function initRepoIssueSidebar() {
 
   // init the combo list: a dropdown for selecting items, and a list for showing selected items and related actions
   queryElems<HTMLElement>(document, '.issue-sidebar-combo', (el) => new IssueSidebarComboList(el).init());
+
+  // hook up the project column picker (must run after combo list init)
+  initProjectColumnPicker();
 }

@@ -1,0 +1,29 @@
+{{$pageMeta := .}}
+{{$data := .ProjectsData}}
+<div id="sidebar-project-column"
+	data-issue-id="{{if $pageMeta.Issue}}{{$pageMeta.Issue.ID}}{{end}}"
+	data-update-url="{{if $pageMeta.Issue}}{{$pageMeta.RepoLink}}/issues/projects/column?issue_id={{$pageMeta.Issue.ID}}{{end}}">
+{{if and $pageMeta.Issue $pageMeta.Issue.Project $data.ProjectColumns (gt (len $data.ProjectColumns) 1)}}
+	{{if $pageMeta.CanModifyIssueOrPull}}
+	<div class="ui dropdown selection fluid column-selector-dropdown"
+		data-update-url="{{$pageMeta.RepoLink}}/issues/projects/column?issue_id={{$pageMeta.Issue.ID}}">
+		<input type="hidden" name="column_id" value="{{$data.SelectedColumnID}}">
+		<div class="default text">{{range $data.ProjectColumns}}{{if eq .ID $data.SelectedColumnID}}{{.Title}}{{end}}{{end}}</div>
+		{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+		<div class="menu">
+			{{range $data.ProjectColumns}}
+				<div class="item {{if eq .ID $data.SelectedColumnID}}active selected{{end}}" data-value="{{.ID}}">{{.Title}}</div>
+			{{end}}
+		</div>
+	</div>
+	{{else}}
+	{{range $data.ProjectColumns}}
+		{{if eq .ID $data.SelectedColumnID}}
+		<div class="tw-mt-1">
+			<span class="muted">{{svg "octicon-columns" 16 "tw-mr-1"}}{{.Title}}</span>
+		</div>
+		{{end}}
+	{{end}}
+	{{end}}
+{{end}}
+</div>

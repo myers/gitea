@@ -461,6 +461,95 @@ func UpdateIssueProject(ctx *context.Context) {
 		}
 	}
 
+	// Return columns for the new project so the sidebar column picker
+	// can update without a page reload.
+	type columnInfo struct {
+		ID    int64  `json:"id"`
+		Title string `json:"title"`
+	}
+	result := map[string]any{"ok": true}
+	if projectID > 0 {
+		project, err := project_model.GetProjectByID(ctx, projectID)
+		if err != nil {
+			ctx.ServerError("GetProjectByID", err)
+			return
+		}
+		columns, err := project.GetColumns(ctx)
+		if err != nil {
+			ctx.ServerError("GetProjectColumns", err)
+			return
+		}
+		cols := make([]columnInfo, 0, len(columns))
+		for _, c := range columns {
+			cols = append(cols, columnInfo{ID: c.ID, Title: c.Title})
+		}
+		// The issue was assigned to the default column
+		var selectedColumnID int64
+		if len(issues) > 0 {
+			selectedColumnID, _ = issues[0].ProjectColumnID(ctx)
+			if selectedColumnID == 0 {
+				defaultColumn, err := project.MustDefaultColumn(ctx)
+				if err == nil {
+					selectedColumnID = defaultColumn.ID
+				}
+			}
+		}
+		result["columns"] = cols
+		result["selected_column_id"] = selectedColumnID
+	} else {
+		result["columns"] = []columnInfo{}
+		result["selected_column_id"] = 0
+	}
+	ctx.JSON(http.StatusOK, result)
+}
+
+// UpdateIssueProjectColumn moves an issue to a different column within its current project
+func UpdateIssueProjectColumn(ctx *context.Context) {
+	issueID := ctx.FormInt64("issue_id")
+	columnID := ctx.FormInt64("id")
+
+	issue, err := issues_model.GetIssueByID(ctx, issueID)
+	if err != nil {
+		if issues_model.IsErrIssueNotExist(err) {
+			ctx.NotFound(nil)
+			return
+		}
+		ctx.ServerError("GetIssueByID", err)
+		return
+	}
+	if issue.RepoID != ctx.Repo.Repository.ID {
+		ctx.NotFound(nil)
+		return
+	}
+
+	if err := issue.LoadProject(ctx); err != nil {
+		ctx.ServerError("LoadProject", err)
+		return
+	}
+	if issue.Project == nil {
+		ctx.NotFound(nil)
+		return
+	}
+
+	column, err := project_model.GetColumn(ctx, columnID)
+	if err != nil {
+		if project_model.IsErrProjectColumnNotExist(err) {
+			ctx.NotFound(nil)
+			return
+		}
+		ctx.ServerError("GetColumn", err)
+		return
+	}
+	if column.ProjectID != issue.Project.ID {
+		ctx.NotFound(nil)
+		return
+	}
+
+	if err := project_service.MoveIssuesOnProjectColumn(ctx, ctx.Doer, column, map[int64]int64{0: issue.ID}); err != nil {
+		ctx.ServerError("MoveIssuesOnProjectColumn", err)
+		return
+	}
+
 	ctx.JSONOK()
 }
 

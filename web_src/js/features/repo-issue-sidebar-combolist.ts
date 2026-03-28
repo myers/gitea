@@ -31,6 +31,9 @@ export class IssueSidebarComboList {
   elComboValue: HTMLInputElement;
   initialValues: string[];
   container: HTMLElement;
+  // Optional callback invoked after the backend update completes.
+  // If it returns true, the page reload is skipped.
+  onAfterUpdate?: (response: Response, changedValues: string[]) => Promise<boolean>;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -63,6 +66,7 @@ export class IssueSidebarComboList {
   }
 
   async updateToBackend(changedValues: Array<string>) {
+    let resp: Response | undefined;
     if (this.updateAlgo === 'diff') {
       for (const value of this.initialValues) {
         if (!changedValues.includes(value)) {
@@ -71,12 +75,13 @@ export class IssueSidebarComboList {
       }
       for (const value of changedValues) {
         if (!this.initialValues.includes(value)) {
-          await POST(this.updateUrl, {data: new URLSearchParams({action: 'attach', id: value})});
+          resp = await POST(this.updateUrl, {data: new URLSearchParams({action: 'attach', id: value})});
         }
       }
     } else {
-      await POST(this.updateUrl, {data: new URLSearchParams({id: changedValues.join(',')})});
+      resp = await POST(this.updateUrl, {data: new URLSearchParams({id: changedValues.join(',')})});
     }
+    if (this.onAfterUpdate && resp && await this.onAfterUpdate(resp, changedValues)) return;
     issueSidebarReloadConfirmDraftComment();
   }
 
@@ -133,6 +138,7 @@ export class IssueSidebarComboList {
   }
 
   init() {
+    (this.container as any)._comboList = this;
     // init the checked items from initial value
     if (this.elComboValue.value && this.elComboValue.value !== '0' && !queryElems(this.elDropdown, `.menu > .item.checked`).length) {
       const values = this.elComboValue.value.split(',');

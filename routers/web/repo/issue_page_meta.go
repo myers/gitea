@@ -37,6 +37,8 @@ type issueSidebarProjectsData struct {
 	SelectedProjectID int64
 	OpenProjects      []*project_model.Project
 	ClosedProjects    []*project_model.Project
+	ProjectColumns    []*project_model.Column
+	SelectedColumnID  int64
 }
 
 type IssuePageMetaData struct {
@@ -97,6 +99,12 @@ func retrieveRepoIssueMetaData(ctx *context.Context, repo *repo_model.Repository
 	// A reader(creator) could update some meta (eg: target branch), but can't change assignees anymore.
 	// For non-creator users, only writers could update some meta (eg: assignees, milestone, project)
 	// Need to clarify the logic and add some tests in the future
+	// Load project column data for all users (read-only display for non-writers)
+	data.retrieveProjectColumnsData(ctx)
+	if ctx.Written() {
+		return data
+	}
+
 	data.CanModifyIssueOrPull = ctx.Repo.CanWriteIssuesOrPulls(isPull) && !ctx.Repo.Repository.IsArchived
 	if !data.CanModifyIssueOrPull {
 		return data
@@ -156,6 +164,33 @@ func (d *IssuePageMetaData) retrieveAssigneesData(ctx *context.Context) {
 		d.AssigneesData.SelectedAssigneeIDs = strings.Join(ids, ",")
 	}
 	ctx.Data["Assignees"] = d.AssigneesData.CandidateAssignees
+}
+
+func (d *IssuePageMetaData) retrieveProjectColumnsData(ctx *context.Context) {
+	if d.Issue == nil || d.Issue.Project == nil {
+		return
+	}
+	d.ProjectsData.SelectedProjectID = d.Issue.Project.ID
+	columns, err := d.Issue.Project.GetColumns(ctx)
+	if err != nil {
+		ctx.ServerError("GetProjectColumns", err)
+		return
+	}
+	d.ProjectsData.ProjectColumns = columns
+	columnID, err := d.Issue.ProjectColumnID(ctx)
+	if err != nil {
+		ctx.ServerError("ProjectColumnID", err)
+		return
+	}
+	if columnID == 0 {
+		defaultColumn, err := d.Issue.Project.MustDefaultColumn(ctx)
+		if err != nil {
+			ctx.ServerError("MustDefaultColumn", err)
+			return
+		}
+		columnID = defaultColumn.ID
+	}
+	d.ProjectsData.SelectedColumnID = columnID
 }
 
 func (d *IssuePageMetaData) retrieveProjectsDataForIssueWriter(ctx *context.Context) {
