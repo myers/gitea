@@ -284,7 +284,7 @@ func GetDefaultProjectID(ctx context.Context, repo *repo_model.Repository, isPR 
 		return 0
 	}
 	p, err := project_model.GetProjectByID(ctx, cfg.GetDefaultProjectID())
-	if err != nil || p.IsClosed {
+	if err != nil || p.IsClosed || !p.CanBeAccessedByOwnerRepo(repo.OwnerID, repo) {
 		return 0
 	}
 	return p.ID

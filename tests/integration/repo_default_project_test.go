@@ -152,3 +152,41 @@ func TestDefaultProjectExplicitProjectWins(t *testing.T) {
 	assert.True(t, has)
 	assert.Equal(t, explicitProject.ID, pi.ProjectID, "explicit project should win over default")
 }
+
+func TestDefaultProjectSkipsClosedProject(t *testing.T) {
+	require.NoError(t, unittest.PrepareTestDatabase())
+
+	user := unittest.AssertExistsAndLoadBean(t, &user_model.User{ID: 2})
+	repo := unittest.AssertExistsAndLoadBean(t, &repo_model.Repository{ID: 1})
+
+	project := &project_model.Project{
+		Title:    "Closed Project",
+		RepoID:   repo.ID,
+		Type:     project_model.TypeRepository,
+		IsClosed: true,
+	}
+	require.NoError(t, project_model.NewProject(t.Context(), project))
+
+	repoUnit, err := repo.GetUnit(t.Context(), unit.TypeProjects)
+	require.NoError(t, err)
+	cfg := repoUnit.ProjectsConfig()
+	cfg.DefaultProjectID = project.ID
+	cfg.AutoAssignIssues = true
+	repoUnit.Config = cfg
+	_, err = db.GetEngine(t.Context()).ID(repoUnit.ID).Cols("config").Update(repoUnit)
+	require.NoError(t, err)
+
+	issue := &issues_model.Issue{
+		RepoID:   repo.ID,
+		PosterID: user.ID,
+		Poster:   user,
+		Title:    "Should not assign to closed project",
+	}
+	err = issue_service.NewIssue(t.Context(), repo, issue, nil, nil, nil, 0)
+	require.NoError(t, err)
+
+	var pi project_model.ProjectIssue
+	has, err := db.GetEngine(t.Context()).Where("issue_id=?", issue.ID).Get(&pi)
+	require.NoError(t, err)
+	assert.False(t, has, "issue should NOT be assigned to a closed project")
+}
