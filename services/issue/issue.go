@@ -13,6 +13,7 @@ import (
 	access_model "code.gitea.io/gitea/models/perm/access"
 	project_model "code.gitea.io/gitea/models/project"
 	repo_model "code.gitea.io/gitea/models/repo"
+	unit_model "code.gitea.io/gitea/models/unit"
 	system_model "code.gitea.io/gitea/models/system"
 	user_model "code.gitea.io/gitea/models/user"
 	"code.gitea.io/gitea/modules/container"
@@ -31,6 +32,10 @@ func NewIssue(ctx context.Context, repo *repo_model.Repository, issue *issues_mo
 
 	if user_model.IsUserBlockedBy(ctx, issue.Poster, repo.OwnerID) || user_model.IsUserBlockedBy(ctx, issue.Poster, assigneeIDs...) {
 		return user_model.ErrBlockedUser
+	}
+
+	if projectID == 0 {
+		projectID = GetDefaultProjectID(ctx, repo, false)
 	}
 
 	if err := db.WithTx(ctx, func(ctx context.Context) error {
@@ -261,6 +266,28 @@ func GetRefEndNamesAndURLs(issues []*issues_model.Issue, repoLink string) (map[i
 		}
 	}
 	return issueRefEndNames, issueRefURLs
+}
+
+func GetDefaultProjectID(ctx context.Context, repo *repo_model.Repository, isPR bool) int64 {
+	unit, err := repo.GetUnit(ctx, unit_model.TypeProjects)
+	if err != nil {
+		return 0
+	}
+	cfg := unit.ProjectsConfig()
+	if cfg.GetDefaultProjectID() == 0 {
+		return 0
+	}
+	if isPR && !cfg.AutoAssignPRs {
+		return 0
+	}
+	if !isPR && !cfg.AutoAssignIssues {
+		return 0
+	}
+	p, err := project_model.GetProjectByID(ctx, cfg.GetDefaultProjectID())
+	if err != nil || p.IsClosed {
+		return 0
+	}
+	return p.ID
 }
 
 // deleteIssue deletes the issue
