@@ -127,6 +127,9 @@ type RepoSettingForm struct {
 
 	EnableProjects bool
 	ProjectsMode   string
+	DefaultProjectID   int64
+	AutoAssignIssues   bool
+	AutoAssignPRs      bool
 
 	EnableReleases bool
 
