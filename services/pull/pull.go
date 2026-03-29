@@ -94,6 +94,13 @@ func NewPullRequest(ctx context.Context, opts *NewPullRequestOptions) error {
 		return err
 	}
 
+	if opts.ProjectID == 0 {
+		opts.ProjectID = issue_service.GetDefaultProjectID(ctx, repo, true)
+		if opts.ProjectID > 0 {
+			canAssignProject = true
+		}
+	}
+
 	assigneeCommentMap := make(map[int64]*issues_model.Comment)
 
 	var reviewNotifiers []*issue_service.ReviewRequestNotifier
