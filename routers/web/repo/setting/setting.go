@@ -12,9 +12,11 @@ import (
 
 	"code.gitea.io/gitea/models/db"
 	"code.gitea.io/gitea/models/organization"
+	project_model "code.gitea.io/gitea/models/project"
 	repo_model "code.gitea.io/gitea/models/repo"
 	unit_model "code.gitea.io/gitea/models/unit"
 	user_model "code.gitea.io/gitea/models/user"
+	"code.gitea.io/gitea/modules/optional"
 	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/gitrepo"
 	"code.gitea.io/gitea/modules/indexer/code"
@@ -98,6 +100,19 @@ func SettingsCtxData(ctx *context.Context) {
 
 // Settings show a repository's settings page
 func Settings(ctx *context.Context) {
+	repo := ctx.Repo.Repository
+	if !unit_model.TypeProjects.UnitGlobalDisabled() {
+		openProjects, err := db.Find[project_model.Project](ctx, project_model.SearchOptions{
+			RepoID:   repo.ID,
+			IsClosed: optional.Some(false),
+			Type:     project_model.TypeRepository,
+		})
+		if err != nil {
+			ctx.ServerError("FindProjects", err)
+			return
+		}
+		ctx.Data["OpenProjects"] = openProjects
+	}
 	ctx.HTML(http.StatusOK, tplSettingsOptions)
 }
 
@@ -591,9 +606,21 @@ func handleSettingsPostAdvanced(ctx *context.Context) {
 	}
 
 	if form.EnableProjects && !unit_model.TypeProjects.UnitGlobalDisabled() {
-		units = append(units, newRepoUnit(repo, unit_model.TypeProjects, &repo_model.ProjectsConfig{
-			ProjectsMode: repo_model.ProjectsMode(form.ProjectsMode),
-		}))
+		projectsCfg := &repo_model.ProjectsConfig{
+			ProjectsMode:     repo_model.ProjectsMode(form.ProjectsMode),
+			DefaultProjectID: form.DefaultProjectID,
+			AutoAssignIssues: form.AutoAssignIssues,
+			AutoAssignPRs:    form.AutoAssignPRs,
+		}
+		if form.DefaultProjectID > 0 {
+			p, err := project_model.GetProjectByID(ctx, form.DefaultProjectID)
+			if err != nil || !p.CanBeAccessedByOwnerRepo(repo.OwnerID, repo) {
+				projectsCfg.DefaultProjectID = 0
+				projectsCfg.AutoAssignIssues = false
+				projectsCfg.AutoAssignPRs = false
+			}
+		}
+		units = append(units, newRepoUnit(repo, unit_model.TypeProjects, projectsCfg))
 	} else if !unit_model.TypeProjects.UnitGlobalDisabled() {
 		deleteUnitTypes = append(deleteUnitTypes, unit_model.TypeProjects)
 	}
