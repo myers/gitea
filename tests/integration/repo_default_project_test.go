@@ -32,7 +32,7 @@ func TestDefaultProjectAutoAssignIssue(t *testing.T) {
 		Type:   project_model.TypeRepository,
 	}
 	require.NoError(t, project_model.NewProject(t.Context(), project))
-	assert.Greater(t, project.ID, int64(0))
+	assert.Positive(t, project.ID)
 
 	// Configure the repo to auto-assign issues to this project
 	repoUnit, err := repo.GetUnit(t.Context(), unit.TypeProjects)
