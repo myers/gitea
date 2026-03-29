@@ -479,6 +479,38 @@
 						</div>
 					</div>
 				</div>
+				<div class="field tw-pl-4" id="default_project_box">
+					<label>{{ctx.Locale.Tr "repo.settings.projects_default_project"}}</label>
+					<p class="help">{{ctx.Locale.Tr "repo.settings.projects_default_project_desc"}}</p>
+					<div class="ui selection dropdown">
+						<select name="default_project_id">
+							<option value="0">{{ctx.Locale.Tr "repo.settings.projects_default_project_none"}}</option>
+							{{range .OpenProjects}}
+								<option value="{{.ID}}" {{if eq .ID $projectsUnit.ProjectsConfig.GetDefaultProjectID}}selected{{end}}>{{.Title}}</option>
+							{{end}}
+						</select>
+						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						<div class="default text">{{ctx.Locale.Tr "repo.settings.projects_default_project_none"}}</div>
+						<div class="menu">
+							<div class="item" data-value="0">{{ctx.Locale.Tr "repo.settings.projects_default_project_none"}}</div>
+							{{range .OpenProjects}}
+								<div class="item" data-value="{{.ID}}">{{.Title}}</div>
+							{{end}}
+						</div>
+					</div>
+					<div class="field tw-mt-2">
+						<div class="ui checkbox">
+							<input name="auto_assign_issues" type="checkbox" {{if $projectsUnit.ProjectsConfig.AutoAssignIssues}}checked{{end}}>
+							<label>{{ctx.Locale.Tr "repo.settings.projects_auto_assign_issues"}}</label>
+						</div>
+					</div>
+					<div class="field">
+						<div class="ui checkbox">
+							<input name="auto_assign_prs" type="checkbox" {{if $projectsUnit.ProjectsConfig.AutoAssignPRs}}checked{{end}}>
+							<label>{{ctx.Locale.Tr "repo.settings.projects_auto_assign_prs"}}</label>
+						</div>
+					</div>
+				</div>
 
 				<div class="divider"></div>
 
