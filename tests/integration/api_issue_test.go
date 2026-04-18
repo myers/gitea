@@ -521,8 +521,6 @@ func TestAPIIssueProjectMeta(t *testing.T) {
 		require.Len(t, apiIssue.Projects, 1)
 		assert.Equal(t, int64(1), apiIssue.Projects[0].ID)
 		assert.Equal(t, "First project", apiIssue.Projects[0].Title)
-		assert.Equal(t, int64(1), apiIssue.Projects[0].ColumnID)
-		assert.Equal(t, "To Do", apiIssue.Projects[0].Column)
 	})
 
 	t.Run("IssueWithProjectNoColumn", func(t *testing.T) {
@@ -535,8 +533,6 @@ func TestAPIIssueProjectMeta(t *testing.T) {
 
 		require.Len(t, apiIssue.Projects, 1)
 		assert.Equal(t, int64(1), apiIssue.Projects[0].ID)
-		assert.Equal(t, int64(0), apiIssue.Projects[0].ColumnID)
-		assert.Empty(t, apiIssue.Projects[0].Column)
 	})
 
 	t.Run("IssueWithoutProject", func(t *testing.T) {

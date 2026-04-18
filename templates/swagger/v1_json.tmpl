@@ -26384,7 +26384,7 @@
         "projects": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ProjectMeta"
+            "$ref": "#/definitions/ProjectRef"
           },
           "x-go-name": "Projects"
         },
@@ -27734,55 +27734,18 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
-    "ProjectMeta": {
-      "description": "ProjectMeta represents a project board summary embedded in issue/PR responses",
+    "ProjectRef": {
       "type": "object",
+      "title": "ProjectRef is a project summary embedded in issue/PR responses.",
       "properties": {
-        "closed_at": {
-          "type": "string",
-          "format": "date-time",
-          "x-go-name": "Closed"
-        },
-        "column": {
-          "type": "string",
-          "x-go-name": "Column"
-        },
-        "column_id": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "ColumnID"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "x-go-name": "Created"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
         "id": {
           "type": "integer",
           "format": "int64",
           "x-go-name": "ID"
         },
-        "state": {
-          "type": "string",
-          "enum": [
-            "open",
-            "closed"
-          ],
-          "x-go-enum-desc": "open StateOpen  StateOpen pr is opened\nclosed StateClosed  StateClosed pr is closed",
-          "x-go-name": "State"
-        },
         "title": {
           "type": "string",
           "x-go-name": "Title"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "x-go-name": "Updated"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -28005,7 +27968,7 @@
         "projects": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ProjectMeta"
+            "$ref": "#/definitions/ProjectRef"
           },
           "x-go-name": "Projects"
         },

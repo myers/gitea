@@ -15,35 +15,15 @@ import (
 	api "code.gitea.io/gitea/modules/structs"
 )
 
-// ToAPIProject converts a project to its API representation for embedding in issue/PR responses.
-func ToAPIProject(p *project_model.Project, columnID int64, columnTitle string) *api.ProjectMeta {
+// ToProjectRef converts a project to a minimal reference for embedding in issue/PR responses.
+func ToProjectRef(p *project_model.Project) *api.ProjectRef {
 	if p == nil {
 		return nil
 	}
-
-	state := api.StateOpen
-	if p.IsClosed {
-		state = api.StateClosed
+	return &api.ProjectRef{
+		ID:    p.ID,
+		Title: p.Title,
 	}
-
-	result := &api.ProjectMeta{
-		ID:          p.ID,
-		Title:       p.Title,
-		Description: p.Description,
-		State:       state,
-		Created:     p.CreatedUnix.AsTime(),
-		Updated:     p.UpdatedUnix.AsTimePtr(),
-	}
-	if p.IsClosed {
-		result.Closed = p.ClosedDateUnix.AsTimePtr()
-	}
-
-	if columnID > 0 {
-		result.ColumnID = columnID
-		result.Column = columnTitle
-	}
-
-	return result
 }
 
 // canDoerSeeProject checks if the doer has permission to see a project.
