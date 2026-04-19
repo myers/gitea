@@ -4393,6 +4393,12 @@
             "description": "Number of items per page",
             "name": "limit",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "comma-separated list of additional fields: \"dependencies\" adds blocked_by and blocking issue IDs",
+            "name": "includes",
+            "in": "query"
           }
         ],
         "responses": {
@@ -9575,6 +9581,12 @@
             "description": "page size of results",
             "name": "limit",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "comma-separated list of additional fields: \"dependencies\" adds blocked_by and blocking issue IDs",
+            "name": "includes",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10380,6 +10392,12 @@
             "name": "index",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "comma-separated list of additional fields: \"dependencies\" adds blocked_by and blocking issue IDs",
+            "name": "includes",
+            "in": "query"
           }
         ],
         "responses": {
@@ -22088,12 +22106,14 @@
       "type": "object",
       "properties": {
         "permission": {
+          "description": "Permission level to grant the collaborator\nread RepoWritePermissionRead\nwrite RepoWritePermissionWrite\nadmin RepoWritePermissionAdmin",
           "type": "string",
           "enum": [
             "read",
             "write",
             "admin"
           ],
+          "x-go-enum-desc": "read RepoWritePermissionRead\nwrite RepoWritePermissionWrite\nadmin RepoWritePermissionAdmin",
           "x-go-name": "Permission"
         }
       },
@@ -23820,13 +23840,14 @@
           "x-go-name": "UserName"
         },
         "visibility": {
-          "description": "possible values are `public` (default), `limited` or `private`",
+          "description": "possible values are `public` (default), `limited` or `private`\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
           "enum": [
             "public",
             "limited",
             "private"
           ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         },
         "website": {
@@ -24100,12 +24121,13 @@
           "x-go-name": "Name"
         },
         "object_format_name": {
-          "description": "ObjectFormatName of the underlying git repository, empty string for default (sha1)",
+          "description": "ObjectFormatName of the underlying git repository, empty string for default (sha1)\nsha1 ObjectFormatSHA1\nsha256 ObjectFormatSHA256",
           "type": "string",
           "enum": [
             "sha1",
             "sha256"
           ],
+          "x-go-enum-desc": "sha1 ObjectFormatSHA1\nsha256 ObjectFormatSHA256",
           "x-go-name": "ObjectFormatName"
         },
         "private": {
@@ -24258,6 +24280,7 @@
             "write",
             "admin"
           ],
+          "x-go-enum-desc": "read RepoWritePermissionRead\nwrite RepoWritePermissionWrite\nadmin RepoWritePermissionAdmin",
           "x-go-name": "Permission"
         },
         "units": {
@@ -24352,8 +24375,14 @@
           "x-go-name": "Username"
         },
         "visibility": {
-          "description": "User visibility level: public, limited, or private",
+          "description": "User visibility level: public, limited, or private\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
+          "enum": [
+            "public",
+            "limited",
+            "private"
+          ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         }
       },
@@ -24978,13 +25007,14 @@
           "x-go-name": "RepoAdminChangeTeamAccess"
         },
         "visibility": {
-          "description": "possible values are `public`, `limited` or `private`",
+          "description": "possible values are `public`, `limited` or `private`\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
           "enum": [
             "public",
             "limited",
             "private"
           ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         },
         "website": {
@@ -25348,6 +25378,7 @@
             "write",
             "admin"
           ],
+          "x-go-enum-desc": "read RepoWritePermissionRead\nwrite RepoWritePermissionWrite\nadmin RepoWritePermissionAdmin",
           "x-go-name": "Permission"
         },
         "units": {
@@ -25478,8 +25509,14 @@
           "x-go-name": "SourceID"
         },
         "visibility": {
-          "description": "User visibility level: public, limited, or private",
+          "description": "User visibility level: public, limited, or private\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
+          "enum": [
+            "public",
+            "limited",
+            "private"
+          ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         },
         "website": {
@@ -26309,6 +26346,20 @@
           },
           "x-go-name": "Assignees"
         },
+        "blocked_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IssueMeta"
+          },
+          "x-go-name": "BlockedBy"
+        },
+        "blocking": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IssueMeta"
+          },
+          "x-go-name": "Blocking"
+        },
         "body": {
           "type": "string",
           "x-go-name": "Body"
@@ -26380,6 +26431,13 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "PinOrder"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectRef"
+          },
+          "x-go-name": "Projects"
         },
         "pull_request": {
           "$ref": "#/definitions/PullRequestMeta"
@@ -27430,8 +27488,14 @@
           "x-go-name": "UserName"
         },
         "visibility": {
-          "description": "The visibility level of the organization (public, limited, private)",
+          "description": "The visibility level of the organization (public, limited, private)\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
+          "enum": [
+            "public",
+            "limited",
+            "private"
+          ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         },
         "website": {
@@ -27727,6 +27791,22 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "ProjectRef": {
+      "type": "object",
+      "title": "ProjectRef is a project summary embedded in issue/PR responses.",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "PublicKey": {
       "description": "PublicKey publickey is a user key to push code to repository",
       "type": "object",
@@ -27941,6 +28021,13 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "PinOrder"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectRef"
+          },
+          "x-go-name": "Projects"
         },
         "requested_reviewers": {
           "description": "The users requested to review the pull request",
@@ -28415,8 +28502,16 @@
       "type": "object",
       "properties": {
         "permission": {
-          "description": "Permission level of the collaborator",
+          "description": "Permission level of the collaborator\nnone AccessLevelNameNone\nread AccessLevelNameRead\nwrite AccessLevelNameWrite\nadmin AccessLevelNameAdmin\nowner AccessLevelNameOwner",
           "type": "string",
+          "enum": [
+            "none",
+            "read",
+            "write",
+            "admin",
+            "owner"
+          ],
+          "x-go-enum-desc": "none AccessLevelNameNone\nread AccessLevelNameRead\nwrite AccessLevelNameWrite\nadmin AccessLevelNameAdmin\nowner AccessLevelNameOwner",
           "x-go-name": "Permission"
         },
         "role_name": {
@@ -28693,12 +28788,13 @@
           "x-go-name": "Name"
         },
         "object_format_name": {
-          "description": "ObjectFormatName of the underlying git repository",
+          "description": "ObjectFormatName of the underlying git repository\nsha1 ObjectFormatSHA1\nsha256 ObjectFormatSHA256",
           "type": "string",
           "enum": [
             "sha1",
             "sha256"
           ],
+          "x-go-enum-desc": "sha1 ObjectFormatSHA1\nsha256 ObjectFormatSHA256",
           "x-go-name": "ObjectFormatName"
         },
         "open_issues_count": {
@@ -29072,6 +29168,7 @@
             "admin",
             "owner"
           ],
+          "x-go-enum-desc": "none AccessLevelNameNone\nread AccessLevelNameRead\nwrite AccessLevelNameWrite\nadmin AccessLevelNameAdmin\nowner AccessLevelNameOwner",
           "x-go-name": "Permission"
         },
         "units": {
@@ -29618,8 +29715,14 @@
           "x-go-name": "StarredRepos"
         },
         "visibility": {
-          "description": "User visibility level option: public, limited, private",
+          "description": "User visibility level option: public, limited, private\npublic UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "type": "string",
+          "enum": [
+            "public",
+            "limited",
+            "private"
+          ],
+          "x-go-enum-desc": "public UserVisibilityPublic\nlimited UserVisibilityLimited\nprivate UserVisibilityPrivate",
           "x-go-name": "Visibility"
         },
         "website": {

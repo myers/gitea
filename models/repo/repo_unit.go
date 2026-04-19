@@ -190,7 +190,10 @@ const (
 
 // ProjectsConfig describes projects config
 type ProjectsConfig struct {
-	ProjectsMode ProjectsMode
+	ProjectsMode     ProjectsMode
+	DefaultProjectID int64 `json:"DefaultProjectID,omitempty"`
+	AutoAssignIssues bool  `json:"AutoAssignIssues,omitempty"`
+	AutoAssignPRs    bool  `json:"AutoAssignPRs,omitempty"`
 }
 
 // FromDB fills up a ProjectsConfig from serialized format.
@@ -211,6 +214,13 @@ func (cfg *ProjectsConfig) GetProjectsMode() ProjectsMode {
 	}
 
 	return ProjectsModeAll
+}
+
+func (cfg *ProjectsConfig) GetDefaultProjectID() int64 {
+	if cfg == nil {
+		return 0
+	}
+	return cfg.DefaultProjectID
 }
 
 func (cfg *ProjectsConfig) IsProjectsAllowed(m ProjectsMode) bool {

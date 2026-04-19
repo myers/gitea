@@ -85,6 +85,9 @@ type Issue struct {
 	Milestone         *Milestone             `xorm:"-"`
 	isMilestoneLoaded bool                   `xorm:"-"`
 	Project           *project_model.Project `xorm:"-"`
+	ProjectBoardID    int64                  `xorm:"-"`
+	ProjectBoardTitle string                 `xorm:"-"`
+	isProjectLoaded   bool                   `xorm:"-"`
 	Priority          int
 	AssigneeID        int64            `xorm:"-"`
 	Assignee          *user_model.User `xorm:"-"`
@@ -122,6 +125,13 @@ type Issue struct {
 
 	// Time estimate
 	TimeEstimate int64 `xorm:"NOT NULL DEFAULT 0"`
+}
+
+// DependencyRef identifies a dependency issue by its repo-scoped coordinates
+type DependencyRef struct {
+	OwnerName string
+	RepoName  string
+	Index     int64
 }
 
 var (
@@ -377,6 +387,7 @@ func (issue *Issue) ResetAttributesLoaded() {
 	issue.isMilestoneLoaded = false
 	issue.isAttachmentsLoaded = false
 	issue.isAssigneeLoaded = false
+	issue.isProjectLoaded = false
 }
 
 // GetIsRead load the `IsRead` field of the issue

@@ -13,6 +13,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestProjectsConfigSerialization(t *testing.T) {
+	cfg := &ProjectsConfig{
+		ProjectsMode:     ProjectsModeAll,
+		DefaultProjectID: 42,
+		AutoAssignIssues: true,
+		AutoAssignPRs:    false,
+	}
+
+	data, err := cfg.ToDB()
+	assert.NoError(t, err)
+
+	cfg2 := &ProjectsConfig{}
+	err = cfg2.FromDB(data)
+	assert.NoError(t, err)
+	assert.Equal(t, ProjectsModeAll, cfg2.GetProjectsMode())
+	assert.Equal(t, int64(42), cfg2.GetDefaultProjectID())
+	assert.True(t, cfg2.AutoAssignIssues)
+	assert.False(t, cfg2.AutoAssignPRs)
+}
+
+func TestProjectsConfigDefaultValues(t *testing.T) {
+	cfg := &ProjectsConfig{}
+	err := cfg.FromDB([]byte("{}"))
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), cfg.GetDefaultProjectID())
+	assert.False(t, cfg.AutoAssignIssues)
+	assert.False(t, cfg.AutoAssignPRs)
+}
+
 func TestActionsConfig(t *testing.T) {
 	cfg := &ActionsConfig{}
 	cfg.DisableWorkflow("test1.yaml")

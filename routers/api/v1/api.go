@@ -1126,6 +1126,39 @@ func Routes() *web.Router {
 					m.Delete("", user.UnblockUser)
 				}, context.UserAssignmentAPI(), checkTokenPublicOnly())
 			})
+
+			m.Group("/projects", func() {
+				m.Combo("").
+					Get(user.ListProjects).
+					Post(bind(api.CreateProjectOption{}), user.CreateProject)
+				m.Group("/{project_id}", func() {
+					m.Combo("").
+						Get(user.GetProject).
+						Patch(bind(api.EditProjectOption{}), user.EditProject).
+						Delete(user.DeleteProject)
+					m.Group("/columns", func() {
+						m.Combo("").
+							Get(user.ListProjectColumns).
+							Post(bind(api.CreateProjectColumnOption{}), user.CreateProjectColumn)
+						m.Group("/{column_id}", func() {
+							m.Combo("").
+								Get(user.GetProjectColumn).
+								Patch(bind(api.EditProjectColumnOption{}), user.EditProjectColumn).
+								Delete(user.DeleteProjectColumn)
+							m.Post("/move", bind(api.MoveProjectColumnOption{}), user.MoveProjectColumn)
+							m.Group("/cards", func() {
+								m.Combo("").
+									Get(user.ListProjectCards).
+									Post(bind(api.AddProjectCardOption{}), user.AddProjectCard)
+								m.Group("/{card_id}", func() {
+									m.Delete("", user.DeleteProjectCard)
+									m.Post("/move", bind(api.MoveProjectCardOption{}), user.MoveProjectCard)
+								})
+							})
+						})
+					})
+				})
+			})
 		}, tokenRequiresScopes(auth_model.AccessTokenScopeCategoryUser), reqToken())
 
 		// Repositories (requires repo scope, org scope)
@@ -1269,7 +1302,7 @@ func Routes() *web.Router {
 						m.Delete("", reqRepoWriter(unit.TypeActions), repo.DeleteArtifact)
 					})
 					m.Get("/artifacts/{artifact_id}/zip", repo.DownloadArtifact)
-				}, reqRepoReader(unit.TypeActions), context.ReferencesGitRepo(true))
+				}, reqRepoReader(unit.TypeActions))
 				m.Group("/keys", func() {
 					m.Combo("").Get(repo.ListDeployKeys).
 						Post(bind(api.CreateKeyOption{}), repo.CreateDeployKey)
@@ -1571,6 +1604,38 @@ func Routes() *web.Router {
 						Patch(reqToken(), reqRepoWriter(unit.TypeIssues, unit.TypePullRequests), bind(api.EditMilestoneOption{}), repo.EditMilestone).
 						Delete(reqToken(), reqRepoWriter(unit.TypeIssues, unit.TypePullRequests), repo.DeleteMilestone)
 				})
+				m.Group("/projects", func() {
+					m.Combo("").
+						Get(repo.ListProjects).
+						Post(reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.CreateProjectOption{}), repo.CreateProject)
+					m.Group("/{project_id}", func() {
+						m.Combo("").
+							Get(repo.GetProject).
+							Patch(reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.EditProjectOption{}), repo.EditProject).
+							Delete(reqToken(), reqRepoWriter(unit.TypeProjects), repo.DeleteProject)
+						m.Group("/columns", func() {
+							m.Combo("").
+								Get(repo.ListProjectColumns).
+								Post(reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.CreateProjectColumnOption{}), repo.CreateProjectColumn)
+							m.Group("/{column_id}", func() {
+								m.Combo("").
+									Get(repo.GetProjectColumn).
+									Patch(reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.EditProjectColumnOption{}), repo.EditProjectColumn).
+									Delete(reqToken(), reqRepoWriter(unit.TypeProjects), repo.DeleteProjectColumn)
+								m.Post("/move", reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.MoveProjectColumnOption{}), repo.MoveProjectColumn)
+								m.Group("/cards", func() {
+									m.Combo("").
+										Get(repo.ListProjectCards).
+										Post(reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.AddProjectCardOption{}), repo.AddProjectCard)
+									m.Group("/{card_id}", func() {
+										m.Delete("", reqToken(), reqRepoWriter(unit.TypeProjects), repo.DeleteProjectCard)
+										m.Post("/move", reqToken(), reqRepoWriter(unit.TypeProjects), bind(api.MoveProjectCardOption{}), repo.MoveProjectCard)
+									})
+								})
+							})
+						})
+					})
+				}, reqRepoReader(unit.TypeProjects))
 			}, repoAssignment(), checkTokenPublicOnly())
 		}, tokenRequiresScopes(auth_model.AccessTokenScopeCategoryIssue))
 
@@ -1640,6 +1705,38 @@ func Routes() *web.Router {
 				m.Combo("/{id}").Get(reqToken(), org.GetLabel).
 					Patch(reqToken(), reqOrgOwnership(), bind(api.EditLabelOption{}), org.EditLabel).
 					Delete(reqToken(), reqOrgOwnership(), org.DeleteLabel)
+			})
+			m.Group("/projects", func() {
+				m.Combo("").
+					Get(org.ListProjects).
+					Post(reqToken(), reqOrgOwnership(), bind(api.CreateProjectOption{}), org.CreateProject)
+				m.Group("/{project_id}", func() {
+					m.Combo("").
+						Get(org.GetProject).
+						Patch(reqToken(), reqOrgOwnership(), bind(api.EditProjectOption{}), org.EditProject).
+						Delete(reqToken(), reqOrgOwnership(), org.DeleteProject)
+					m.Group("/columns", func() {
+						m.Combo("").
+							Get(org.ListProjectColumns).
+							Post(reqToken(), reqOrgOwnership(), bind(api.CreateProjectColumnOption{}), org.CreateProjectColumn)
+						m.Group("/{column_id}", func() {
+							m.Combo("").
+								Get(org.GetProjectColumn).
+								Patch(reqToken(), reqOrgOwnership(), bind(api.EditProjectColumnOption{}), org.EditProjectColumn).
+								Delete(reqToken(), reqOrgOwnership(), org.DeleteProjectColumn)
+							m.Post("/move", reqToken(), reqOrgOwnership(), bind(api.MoveProjectColumnOption{}), org.MoveProjectColumn)
+							m.Group("/cards", func() {
+								m.Combo("").
+									Get(org.ListProjectCards).
+									Post(reqToken(), reqOrgOwnership(), bind(api.AddProjectCardOption{}), org.AddProjectCard)
+								m.Group("/{card_id}", func() {
+									m.Delete("", reqToken(), reqOrgOwnership(), org.DeleteProjectCard)
+									m.Post("/move", reqToken(), reqOrgOwnership(), bind(api.MoveProjectCardOption{}), org.MoveProjectCard)
+								})
+							})
+						})
+					})
+				})
 			})
 			m.Group("/hooks", func() {
 				m.Combo("").Get(org.ListHooks).

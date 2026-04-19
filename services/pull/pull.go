@@ -94,6 +94,15 @@ func NewPullRequest(ctx context.Context, opts *NewPullRequestOptions) error {
 		return err
 	}
 
+	// Default project is configured by a repo admin, so it applies regardless
+	// of the PR author's project-write permission.
+	if opts.ProjectID == 0 {
+		opts.ProjectID = issue_service.GetDefaultProjectID(ctx, repo, true)
+		if opts.ProjectID > 0 {
+			canAssignProject = true
+		}
+	}
+
 	assigneeCommentMap := make(map[int64]*issues_model.Comment)
 
 	var reviewNotifiers []*issue_service.ReviewRequestNotifier
