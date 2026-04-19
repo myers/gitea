@@ -3363,6 +3363,735 @@
         }
       }
     },
+    "/orgs/{org}/projects": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List an organization's projects",
+        "operationId": "orgListProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Project state, Recognized values are open, closed and all. Defaults to \"open\"",
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project",
+        "operationId": "orgCreateProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Project"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project",
+        "operationId": "orgGetProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project",
+        "operationId": "orgDeleteProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project",
+        "operationId": "orgEditProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List a project's columns",
+        "operationId": "orgListProjectColumns",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumnList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project column",
+        "operationId": "orgCreateProjectColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns/{column_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project column",
+        "operationId": "orgGetProjectColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project column",
+        "operationId": "orgDeleteProjectColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project column",
+        "operationId": "orgEditProjectColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns/{column_id}/cards": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List cards in a project column",
+        "operationId": "orgListProjectCards",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectCardList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Add a card to a project column",
+        "operationId": "orgAddProjectCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectCard"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns/{column_id}/cards/{card_id}": {
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project card",
+        "operationId": "orgDeleteProjectCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns/{column_id}/cards/{card_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project card to a column",
+        "operationId": "orgMoveProjectCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/orgs/{org}/projects/{project_id}/columns/{column_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project column",
+        "operationId": "orgMoveProjectColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the organization",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
     "/orgs/{org}/public_members": {
       "get": {
         "produces": [
@@ -13833,6 +14562,840 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/projects": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List a repository's projects",
+        "operationId": "projectListProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Project state, Recognized values are open, closed and all. Defaults to \"open\"",
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project",
+        "operationId": "projectCreateProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Project"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project",
+        "operationId": "projectGetProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project",
+        "operationId": "projectDeleteProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project",
+        "operationId": "projectEditProject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List a project's columns",
+        "operationId": "projectListColumns",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumnList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project column",
+        "operationId": "projectCreateColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project column",
+        "operationId": "projectGetColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project column",
+        "operationId": "projectDeleteColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project column",
+        "operationId": "projectEditColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/cards": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List cards in a project column",
+        "operationId": "projectListCards",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectCardList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Add a card to a project column",
+        "operationId": "projectAddCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectCard"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/cards/{card_id}": {
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project card",
+        "operationId": "projectDeleteCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/cards/{card_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project card to a column",
+        "operationId": "projectMoveCard",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project column",
+        "operationId": "projectMoveColumn",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/pulls": {
       "get": {
         "produces": [
@@ -20225,6 +21788,594 @@
         }
       }
     },
+    "/user/projects": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List the authenticated user's projects",
+        "operationId": "userListProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Project state, Recognized values are open, closed and all. Defaults to \"open\"",
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectList"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project",
+        "operationId": "userCreateProject",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Project"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project",
+        "operationId": "userGetProject",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project",
+        "operationId": "userDeleteProject",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project",
+        "operationId": "userEditProject",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Project"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List a project's columns",
+        "operationId": "userListProjectColumns",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumnList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Create a project column",
+        "operationId": "userCreateProjectColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns/{column_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Get a project column",
+        "operationId": "userGetProjectColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project column",
+        "operationId": "userDeleteProjectColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Update a project column",
+        "operationId": "userEditProjectColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectColumn"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns/{column_id}/cards": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "List cards in a project column",
+        "operationId": "userListProjectCards",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ProjectCardList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Add a card to a project column",
+        "operationId": "userAddProjectCard",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/ProjectCard"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns/{column_id}/cards/{card_id}": {
+      "delete": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Delete a project card",
+        "operationId": "userDeleteProjectCard",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns/{column_id}/cards/{card_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project card to a column",
+        "operationId": "userMoveProjectCard",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the card",
+            "name": "card_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectCardOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/projects/{project_id}/columns/{column_id}/move": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "project"
+        ],
+        "summary": "Move a project column",
+        "operationId": "userMoveProjectColumn",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the project",
+            "name": "project_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the column",
+            "name": "column_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MoveProjectColumnOption"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
     "/user/repos": {
       "get": {
         "produces": [
@@ -22119,6 +24270,21 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "AddProjectCardOption": {
+      "description": "AddProjectCardOption options for adding a card to a project column",
+      "type": "object",
+      "required": [
+        "issue_id"
+      ],
+      "properties": {
+        "issue_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "IssueID"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "AddTimeOption": {
       "description": "AddTimeOption options for adding time to an issue",
       "type": "object",
@@ -23858,6 +26024,52 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "CreateProjectColumnOption": {
+      "description": "CreateProjectColumnOption options for creating a project column",
+      "type": "object",
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "color": {
+          "type": "string",
+          "x-go-name": "Color"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "CreateProjectOption": {
+      "description": "CreateProjectOption options for creating a project",
+      "type": "object",
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "card_type": {
+          "type": "integer",
+          "format": "uint8",
+          "x-go-name": "CardType"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "template_type": {
+          "type": "integer",
+          "format": "uint8",
+          "x-go-name": "TemplateType"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "CreatePullRequestOption": {
       "description": "CreatePullRequestOption options when creating a pull request",
       "type": "object",
@@ -25021,6 +27233,49 @@
           "description": "The website URL of the organization",
           "type": "string",
           "x-go-name": "Website"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "EditProjectColumnOption": {
+      "description": "EditProjectColumnOption options for editing a project column",
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "x-go-name": "Color"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "EditProjectOption": {
+      "description": "EditProjectOption options for editing a project",
+      "type": "object",
+      "properties": {
+        "card_type": {
+          "type": "integer",
+          "format": "uint8",
+          "x-go-name": "CardType"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "x-go-name": "State"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -27111,6 +29366,38 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "MoveProjectCardOption": {
+      "description": "MoveProjectCardOption options for moving a card between columns",
+      "type": "object",
+      "required": [
+        "column_id"
+      ],
+      "properties": {
+        "column_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ColumnID"
+        },
+        "sorting": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Sorting"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "MoveProjectColumnOption": {
+      "description": "MoveProjectColumnOption options for moving a project column",
+      "type": "object",
+      "properties": {
+        "sorting": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Sorting"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "NewIssuePinsAllowed": {
       "description": "NewIssuePinsAllowed represents an API response that says if new Issue Pins are allowed",
       "type": "object",
@@ -27787,6 +30074,147 @@
         "push": {
           "type": "boolean",
           "x-go-name": "Push"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "Project": {
+      "description": "Project represents a project",
+      "type": "object",
+      "properties": {
+        "card_type": {
+          "type": "integer",
+          "format": "uint8",
+          "x-go-name": "CardType"
+        },
+        "closed_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Closed"
+        },
+        "closed_issues": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ClosedIssues"
+        },
+        "column": {
+          "description": "Column is the project column name (only set when embedded in issue responses)",
+          "type": "string",
+          "x-go-name": "Column"
+        },
+        "column_id": {
+          "description": "ColumnID is the project column the issue is in (only set when embedded in issue responses)",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ColumnID"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Created"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "open_issues": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "OpenIssues"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "x-go-enum-desc": "open StateOpen  StateOpen pr is opened\nclosed StateClosed  StateClosed pr is closed",
+          "x-go-name": "State"
+        },
+        "template_type": {
+          "type": "integer",
+          "format": "uint8",
+          "x-go-name": "TemplateType"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Updated"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "ProjectCard": {
+      "description": "ProjectCard represents an issue card in a project column",
+      "type": "object",
+      "properties": {
+        "column_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ColumnID"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "issue_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "IssueID"
+        },
+        "sorting": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Sorting"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "ProjectColumn": {
+      "description": "ProjectColumn represents a project column (board)",
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "x-go-name": "Color"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Created"
+        },
+        "default": {
+          "type": "boolean",
+          "x-go-name": "Default"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "sorting": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Sorting"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Updated"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -30640,6 +33068,51 @@
         "type": "array",
         "items": {
           "$ref": "#/definitions/Package"
+        }
+      }
+    },
+    "Project": {
+      "description": "",
+      "schema": {
+        "$ref": "#/definitions/Project"
+      }
+    },
+    "ProjectCard": {
+      "description": "",
+      "schema": {
+        "$ref": "#/definitions/ProjectCard"
+      }
+    },
+    "ProjectCardList": {
+      "description": "",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ProjectCard"
+        }
+      }
+    },
+    "ProjectColumn": {
+      "description": "",
+      "schema": {
+        "$ref": "#/definitions/ProjectColumn"
+      }
+    },
+    "ProjectColumnList": {
+      "description": "",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ProjectColumn"
+        }
+      }
+    },
+    "ProjectList": {
+      "description": "",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Project"
         }
       }
     },

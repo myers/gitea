@@ -1,0 +1,103 @@
+name: myers-main
+
+on:
+  push:
+    branches: [myers-main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: make deps-frontend deps-backend
+      - run: make lint-go
+        env:
+          TAGS: bindata sqlite sqlite_unlock_notify
+      - run: make checks-backend
+        env:
+          TAGS: bindata sqlite sqlite_unlock_notify
+      - run: make lint-swagger
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - run: make deps-backend
+      - run: |
+          GO_TEST_PACKAGES=$(go list ./... | grep -v \
+            -e /vendor/ \
+            -e /models/migrations/ \
+            -e /tests/integration \
+            -e /tests$ \
+            -e /modules/indexer/issues/elasticsearch \
+            -e /modules/indexer/issues/meilisearch \
+            -e /modules/storage \
+            | tr '\n' ' ')
+          make test-backend GO_TEST_PACKAGES="$GO_TEST_PACKAGES"
+        env:
+          TAGS: sqlite sqlite_unlock_notify
+          RACE_ENABLED: true
+
+  container:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      - run: git fetch --unshallow --quiet --tags --force
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: vars
+        run: |
+          echo "ts=$(date +%s)" >> "$GITHUB_OUTPUT"
+          echo "sha8=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=myers-main
+            type=raw,value=myers-main-${{ steps.vars.outputs.ts }}-${{ steps.vars.outputs.sha8 }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
