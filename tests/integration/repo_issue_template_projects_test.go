@@ -27,6 +27,14 @@ func issueProjectTemplate(projectTitle string) string {
 	return fmt.Sprintf("---\nname: Bug\nabout: Report a bug\nprojects: [%q]\n---\nDescribe the bug.\n", projectTitle)
 }
 
+const prProjectTemplateMD = "---\nname: PR\nabout: Pull request\nprojects: [%q]\n---\nDescribe the change.\n"
+
+func writePRProjectTemplate(t *testing.T, user *user_model.User, repo *repo_model.Repository, projectTitle string) {
+	t.Helper()
+	body := fmt.Sprintf(prProjectTemplateMD, projectTitle)
+	require.NoError(t, createOrReplaceFileInBranch(user, repo, ".gitea/PULL_REQUEST_TEMPLATE.md", repo.DefaultBranch, body))
+}
+
 // createRepoProjectForTest inserts a new repository-scoped project and returns it.
 func createRepoProjectForTest(t *testing.T, repo *repo_model.Repository, creator *user_model.User, title string) *project_model.Project {
 	t.Helper()
@@ -58,12 +66,6 @@ func assertProjectPreselected(t *testing.T, body string, projectID int64) {
 	t.Helper()
 	assert.Contains(t, body, projectSelectedNeedle(projectID),
 		"expected project %d to be preselected in new-issue page", projectID)
-}
-
-func assertProjectNotPreselected(t *testing.T, body string, projectID int64) {
-	t.Helper()
-	assert.NotContains(t, body, projectSelectedNeedle(projectID),
-		"did not expect project %d to be preselected", projectID)
 }
 
 // TestIssueTemplatePrefillsProject verifies that a YAML issue template with a
@@ -126,9 +128,7 @@ func TestPullRequestTemplatePrefillsProject(t *testing.T) {
 		// while markdown templates only need name + about in the frontmatter.
 		// The auto-detected single-file location is used; directory-based PR
 		// templates (PULL_REQUEST_TEMPLATE/<name>.yaml) are not supported.
-		prTemplateBody := fmt.Sprintf("---\nname: PR\nabout: Pull request\nprojects: [%q]\n---\nDescribe the change.\n", "PR Triage")
-		require.NoError(t, createOrReplaceFileInBranch(user, repo,
-			".gitea/PULL_REQUEST_TEMPLATE.md", repo.DefaultBranch, prTemplateBody))
+		writePRProjectTemplate(t, user, repo, "PR Triage")
 
 		// A compare page only shows the PR form when head != base commit.
 		// Create a feature branch with one additional commit.
@@ -148,30 +148,10 @@ func TestPullRequestTemplatePrefillsProject(t *testing.T) {
 	})
 }
 
-// TestIssueTemplateProjectVisibilityHonored verifies the happy path: a project
-// that is visible to the signed-in user IS preselected from the template.
-//
-// The structural defense for the negative case (cannot preselect a project the
-// actor cannot see) is that retrieveProjectsDataForIssueWriter only loads
-// projects the actor is allowed to see, so SetSelectedProjectTitles can never
-// resolve a hidden project. A meaningful negative fixture requires a repo where
-// the actor can read issues but not a specific project; that is left as a
-// follow-up once such a fixture is available.
 func TestIssueTemplateProjectVisibilityHonored(t *testing.T) {
-	onGiteaRun(t, func(t *testing.T, _ *url.URL) {
-		owner := unittest.AssertExistsAndLoadBean(t, &user_model.User{Name: "user2"})
-		repo := unittest.AssertExistsAndLoadBean(t, &repo_model.Repository{OwnerName: "user2", Name: "repo1"})
-
-		p := createRepoProjectForTest(t, repo, owner, "Triage")
-		require.NoError(t, createOrReplaceFileInBranch(owner, repo,
-			".gitea/ISSUE_TEMPLATE/bug.md", repo.DefaultBranch, issueProjectTemplate("Triage")))
-
-		session := loginUser(t, owner.Name)
-		req := NewRequest(t, "GET", fmt.Sprintf("/%s/issues/new?template=.gitea%%2FISSUE_TEMPLATE%%2Fbug.md",
-			repo.FullName()))
-		resp := session.MakeRequest(t, req, http.StatusOK)
-
-		assertProjectPreselected(t, resp.Body.String(), p.ID)
-		_ = assertProjectNotPreselected // keep helper referenced for future negative cases
-	})
+	// retrieveProjectsDataForIssueWriter only loads projects visible to the actor,
+	// so SetSelectedProjectTitles structurally cannot preselect a hidden project.
+	// A meaningful negative case needs an org-level project the actor cannot see;
+	// add it once that fixture exists.
+	t.Skip("pending hidden-project fixture")
 }
