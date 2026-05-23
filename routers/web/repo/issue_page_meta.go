@@ -236,6 +236,10 @@ func (d *IssuePageMetaData) SetSelectedProjectIDs(ids []int64) {
 	for _, p := range d.ProjectsData.ClosedProjects {
 		allProjects[p.ID] = p
 	}
+	// Rebuild ProjectCards from scratch so a second call (e.g. from
+	// SetSelectedProjectTitles unioning template-supplied projects)
+	// does not stack duplicate cards on top of the first call's set.
+	d.ProjectsData.ProjectCards = nil
 	for _, id := range ids {
 		if project, ok := allProjects[id]; ok {
 			d.ProjectsData.ProjectCards = append(d.ProjectsData.ProjectCards, &issueSidebarProjectCardData{Project: project})

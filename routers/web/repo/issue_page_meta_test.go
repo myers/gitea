@@ -9,6 +9,7 @@ import (
 	project_model "code.gitea.io/gitea/models/project"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newProjectsMetaForTest(open, closed []*project_model.Project) *IssuePageMetaData {
@@ -83,6 +84,9 @@ func TestSetSelectedProjectTitles_UnionsWithExistingQuerySelection(t *testing.T)
 	d.SetSelectedProjectIDs([]int64{2})
 	d.SetSelectedProjectTitles([]string{"Triage"})
 	assert.Equal(t, []int64{2, 1}, d.ProjectsData.SelectedProjectIDs)
+	require.Len(t, d.ProjectsData.ProjectCards, 2)
+	assert.Equal(t, int64(2), d.ProjectsData.ProjectCards[0].Project.ID)
+	assert.Equal(t, int64(1), d.ProjectsData.ProjectCards[1].Project.ID)
 }
 
 func TestSetSelectedProjectTitles_DuplicatesDeduped(t *testing.T) {
@@ -96,6 +100,9 @@ func TestSetSelectedProjectTitles_DuplicatesDeduped(t *testing.T) {
 	d.SetSelectedProjectIDs([]int64{1}) // ?project=1 already picked Triage
 	d.SetSelectedProjectTitles([]string{"Triage", "Other", "Triage"})
 	assert.Equal(t, []int64{1, 2}, d.ProjectsData.SelectedProjectIDs)
+	require.Len(t, d.ProjectsData.ProjectCards, 2)
+	assert.Equal(t, int64(1), d.ProjectsData.ProjectCards[0].Project.ID)
+	assert.Equal(t, int64(2), d.ProjectsData.ProjectCards[1].Project.ID)
 }
 
 func TestSetSelectedProjectTitles_NilTitlesIsNoOp(t *testing.T) {
