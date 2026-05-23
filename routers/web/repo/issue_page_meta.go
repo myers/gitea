@@ -244,6 +244,65 @@ func (d *IssuePageMetaData) SetSelectedProjectIDs(ids []int64) {
 	d.ProjectsData.SelectedProjectIDs = ids
 }
 
+// SetSelectedProjectTitles resolves template-supplied project titles
+// (case-insensitive) against the projects already loaded into
+// ProjectsData by retrieveProjectsDataForIssueWriter, and unions the
+// resulting IDs with whatever SetSelectedProjectIDs has already set
+// (e.g. from ?project= in the URL). Unmatched titles are dropped
+// silently, the same way SetSelectedLabelNames drops unknown labels.
+// Repo-level projects beat owner-level projects when a title appears
+// in both, matching the load order in retrieveProjectsInternal.
+func (d *IssuePageMetaData) SetSelectedProjectTitles(titles []string) {
+	if len(titles) == 0 {
+		return
+	}
+
+	// OpenProjects/ClosedProjects are loaded in repo-then-owner order,
+	// so a put-if-absent walk gives us repo-level precedence for free.
+	titleToID := make(map[string]int64, len(d.ProjectsData.OpenProjects)+len(d.ProjectsData.ClosedProjects))
+	addIfAbsent := func(projects []*project_model.Project) {
+		for _, p := range projects {
+			key := strings.ToLower(p.Title)
+			if _, ok := titleToID[key]; !ok {
+				titleToID[key] = p.ID
+			}
+		}
+	}
+	addIfAbsent(d.ProjectsData.OpenProjects)
+	addIfAbsent(d.ProjectsData.ClosedProjects)
+
+	resolved := make([]int64, 0, len(titles))
+	for _, t := range titles {
+		if id, ok := titleToID[strings.ToLower(t)]; ok {
+			resolved = append(resolved, id)
+		}
+	}
+	if len(resolved) == 0 {
+		return
+	}
+
+	// Union with anything already selected (e.g. from ?project=) and dedup,
+	// preserving the existing order then appending newly-resolved IDs.
+	seen := make(map[int64]struct{}, len(d.ProjectsData.SelectedProjectIDs)+len(resolved))
+	combined := make([]int64, 0, len(d.ProjectsData.SelectedProjectIDs)+len(resolved))
+	for _, id := range d.ProjectsData.SelectedProjectIDs {
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		combined = append(combined, id)
+	}
+	for _, id := range resolved {
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		combined = append(combined, id)
+	}
+
+	d.SetSelectedProjectIDs(combined)
+}
+
 func (d *IssuePageMetaData) retrieveProjectsDataForIssueWriter(ctx *context.Context) {
 	d.ProjectsData.OpenProjects, d.ProjectsData.ClosedProjects = retrieveProjectsInternal(ctx, ctx.Repo.Repository)
 }
