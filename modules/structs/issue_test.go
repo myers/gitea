@@ -103,3 +103,56 @@ labels:
 		})
 	}
 }
+
+func TestIssueTemplate_Projects_UnmarshalYAML(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		tmpl    *IssueTemplate
+		want    *IssueTemplate
+	}{
+		{
+			name:    "array",
+			content: `projects: ["Triage", "Roadmap"]`,
+			tmpl: &IssueTemplate{
+				Projects: []string{"should_be_overwrote"},
+			},
+			want: &IssueTemplate{
+				Projects: []string{"Triage", "Roadmap"},
+			},
+		},
+		{
+			name:    "scalar coerced to single element",
+			content: `projects: Triage`,
+			tmpl:    &IssueTemplate{},
+			want: &IssueTemplate{
+				Projects: []string{"Triage"},
+			},
+		},
+		{
+			name:    "empty",
+			content: `projects:`,
+			tmpl: &IssueTemplate{
+				Projects: []string{"should_be_overwrote"},
+			},
+			want: &IssueTemplate{
+				Projects: nil,
+			},
+		},
+		{
+			name:    "absent",
+			content: `name: bug`,
+			tmpl:    &IssueTemplate{},
+			want: &IssueTemplate{
+				Name: "bug",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := yaml.Unmarshal([]byte(tt.content), tt.tmpl)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, tt.tmpl)
+		})
+	}
+}
