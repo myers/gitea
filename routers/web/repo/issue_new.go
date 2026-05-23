@@ -85,6 +85,8 @@ func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleFiles 
 		}
 		metaData.AssigneesData.SelectedAssigneeIDs = strings.Join(selectedAssigneeIDStrings, ",")
 
+		metaData.SetSelectedProjectTitles(template.Projects)
+
 		if template.Ref != "" && !strings.HasPrefix(template.Ref, "refs/") { // Assume that the ref intended is always a branch - for tags users should use refs/tags/<ref>
 			template.Ref = git.BranchPrefix + template.Ref
 		}
