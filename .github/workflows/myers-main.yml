@@ -21,19 +21,11 @@ jobs:
         with:
           go-version-file: go.mod
           check-latest: true
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-      - run: make deps-frontend deps-backend
-      - run: make lint-go
+      - run: make deps-backend deps-tools
+      # same as upstream's lint-backend job: the bindata tag needs the generated embed files first
+      - run: make generate-go lint-backend
         env:
-          TAGS: bindata sqlite sqlite_unlock_notify
-      - run: make checks-backend
-        env:
-          TAGS: bindata sqlite sqlite_unlock_notify
+          TAGS: bindata
 
   test:
     runs-on: ubuntu-latest
@@ -54,14 +46,15 @@ jobs:
           go-version-file: go.mod
           check-latest: true
       - run: make deps-backend
+      # Unit tests that need no external service: upstream runs the migration, indexer and storage
+      # packages against Elasticsearch/Meilisearch/MinIO containers, which this gate does not start.
       - run: |
           GO_TEST_PACKAGES=$(go list ./... | grep -v \
             -e /vendor/ \
-            -e /models/migrations/ \
+            -e /modelmigration \
             -e /tests/integration \
             -e /tests$ \
-            -e /modules/indexer/issues/elasticsearch \
-            -e /modules/indexer/issues/meilisearch \
+            -e /modules/indexer \
             -e /modules/storage \
             | tr '\n' ' ')
           make test-backend GO_TEST_PACKAGES="$GO_TEST_PACKAGES"
