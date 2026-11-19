@@ -257,6 +257,10 @@ var errJobAlreadyClaimed = errors.New("job already claimed by another runner")
 // It is a var only so tests can shrink it to exercise pagination cheaply.
 var pickTaskBatchSize = 100
 
+// maxFailedClaimsPerPick bounds the failed claims of one CreateTaskForRunner call,
+// so a backlog of broken jobs is not walked in full on every runner poll.
+const maxFailedClaimsPerPick = 20
+
 // CreateTaskForRunner finds a waiting job that matches the runner's labels and
 // atomically claims it. It iterates through all matching jobs so that a
 // concurrent claim by another runner (which would lose the optimistic lock on
@@ -289,6 +293,7 @@ func CreateTaskForRunner(ctx context.Context, runner *ActionRunner, skipJobIDs .
 	var cursorUpdated timeutil.TimeStamp
 	var cursorID int64
 	var claimErr error
+	var failedClaims int
 	for {
 		sess := e.Where(baseCond).And(builder.NotIn("id", skipJobIDs))
 		switch {
@@ -328,6 +333,9 @@ func CreateTaskForRunner(ctx context.Context, runner *ActionRunner, skipJobIDs .
 				}
 				// A job that cannot be claimed must not block the jobs behind it.
 				log.Error("CreateTaskForRunner: claim job %d: %v", v.ID, err)
+				if failedClaims++; failedClaims == maxFailedClaimsPerPick {
+					return nil, false, err
+				}
 				claimErr = err
 			}
 			// Another runner claimed this job concurrently or it failed. Try the next one.
