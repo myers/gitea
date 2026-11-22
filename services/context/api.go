@@ -20,6 +20,7 @@ import (
 	"gitea.dev/modules/git"
 	"gitea.dev/modules/httpcache"
 	"gitea.dev/modules/httplib"
+	"gitea.dev/modules/json"
 	"gitea.dev/modules/log"
 	"gitea.dev/modules/paginator"
 	"gitea.dev/modules/reqctx"
@@ -140,6 +141,11 @@ func (ctx *APIContext) apiErrorInternal(skip int, err error) {
 		Message: message,
 		URL:     setting.API.SwaggerURL,
 	})
+}
+
+// JSON renders content as JSON, with nil slices and maps as [] and {} to match the API spec
+func (ctx *APIContext) JSON(status int, content any) {
+	ctx.writeJSON(status, content, json.MarshalWriteAPI)
 }
 
 // APIErrorNotFound handles 404s for APIContext

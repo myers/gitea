@@ -26,3 +26,18 @@ func TestIndent(t *testing.T) {
 >  "a": 1
 >}`, buf.String())
 }
+
+func TestMarshalWriteAPI(t *testing.T) {
+	v := struct {
+		S []int          `json:"s"`
+		M map[string]int `json:"m"`
+		P *int           `json:"p"`
+	}{}
+	buf := &bytes.Buffer{}
+	assert.NoError(t, MarshalWriteAPI(buf, v))
+	assert.JSONEq(t, `{"s":[],"m":{},"p":null}`, buf.String())
+
+	bs, err := Marshal(v)
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{"s":null,"m":null,"p":null}`, string(bs))
+}
