@@ -279,4 +279,13 @@ func TestAPIListIssueTimeline(t *testing.T) {
 	req = NewRequestf(t, "GET", "/api/v1/repos/%s/%s/issues/%d/timeline?page=9999", repoOwner.Name, repo.Name, issue.Index)
 	resp = MakeRequest(t, req, http.StatusOK)
 	assert.Equal(t, "[]", resp.Body.String())
+
+	// issue 3 starts with code comment 7, which must not shorten the page
+	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/issues/3/timeline?limit=2")
+	resp = MakeRequest(t, req, http.StatusOK)
+	comments = DecodeJSON(t, resp, []*api.TimelineComment{})
+	if assert.Len(t, comments, 2) {
+		assert.EqualValues(t, 10, comments[0].ID)
+		assert.EqualValues(t, 11, comments[1].ID)
+	}
 }
